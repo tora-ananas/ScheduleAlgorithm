@@ -11,7 +11,8 @@ public class TimeCritical {
         while(flag){
             flag = false;
 
-            for (List<Integer> integers : xyTime) {
+            for (int i = 0; i < xyTime.size(); i++) {
+                List<Integer> integers = xyTime.get(i);
 
                 int a = earlyMoments[integers.get(1) - 1];
                 int first = earlyMoments[integers.get(0) - 1] + integers.get(2);

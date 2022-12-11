@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileReaderClass {
+public class FileReaderClass30 {
     static int n = 0;
     static int Tmax = 0;
     static List<List<Integer>> xyTime;
