@@ -1,3 +1,4 @@
+import OldVersion.TimeCritical;
 import junit.framework.TestCase;
 import org.junit.jupiter.api.Test;
 
@@ -10,4 +11,5 @@ public class TestTimeCritical extends TestCase{
         System.out.println(earlyMoment);
 
     }
+
 }
