@@ -25,10 +25,7 @@ public class TimeCritical {
                 }
             }
         }
-        /*for (int elem:earlyMoments) {
-            System.out.println(elem);
-        }
-        System.out.println(" early moment: " + earlyMoments[n-1]);*/
+        //System.out.println(" time critical: " + earlyMoments[n-1]);
         return earlyMoments[n-1];
     }
 

@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class FileReaderClass30 {
     static int countNotEq = 0;
     static int countEq = 0;
     static int count = 0;
+    static long longCountTime = 0;
 
 
     public static void readLines(){
@@ -29,7 +31,7 @@ public class FileReaderClass30 {
             while(line != null){
                 //нашли строчку с проджектом и зашли в след цикл.
                 if (line.startsWith("projects")) {
-                    System.out.println(" NEW PROJECT!");
+                    //System.out.println(" NEW PROJECT!");
                     xyTime = new ArrayList<>();
                     boolean precedence = false;
                     boolean requests = false;
@@ -38,14 +40,14 @@ public class FileReaderClass30 {
                     while (line != null && !line.startsWith("file with basedata")) {
                         if (line.startsWith("jobs (incl. supersource/sink )")) {
                             String[] arrSt = line.split("  ");
-                            System.out.println(arrSt[1]);
+                            //System.out.println(arrSt[1]);
                             n = Integer.parseInt(arrSt[1]);
                             //читаем дальше..
                             line = br.readLine();
                         }
                         if (line.startsWith("horizon")) {
                             String[] arrSt = line.split("\s+");
-                            System.out.println(arrSt[2]);
+                            //System.out.println(arrSt[2]);
                             Tmax = Integer.parseInt(arrSt[2]);
                             line = br.readLine();
                         }
@@ -110,25 +112,39 @@ public class FileReaderClass30 {
                             Bres[1] = Integer.parseInt(arrSt[2]);
                             Bres[2] = Integer.parseInt(arrSt[3]);
                             Bres[3] = Integer.parseInt(arrSt[4]);
-                            System.out.println("END");
+                            //System.out.println("END");
                         }
                         line = br.readLine();
                         if (precedence && requests && resourses){
                             //do some algorithm
+                            long start = System.currentTimeMillis();
                             lateMomentsRes = AsymptoticSchedule.asymptSchedule(n, xyTime, Tmax, Bres);
                             count++;
-                            System.out.println(" LATE SCHEDULE");
+                            //System.out.println(" LATE SCHEDULE");
                             for (int i = 0; i < lateMomentsRes[0].length; i++){
-                                System.out.println("lateSchedule " + i +" : " + lateMomentsRes[0][i]);
+                                //System.out.println("lateSchedule " + i +" : " + lateMomentsRes[0][i]);
                             }
                             if (lateMomentsRes[1][0] == MPMtime ){
-                                System.out.println(" ПРОВЕРКА РАСПИСАНИЯ ПРОШЛА УСПЕШНО");
+                                //System.out.println(" ПРОВЕРКА РАСПИСАНИЯ ПРОШЛА УСПЕШНО");
                                 countEq++;
                             } else {
                                 System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
+                                System.out.println(lateMomentsRes[1][0] + "<-- & --> " + MPMtime);
+                                System.out.println("--->");
+                                System.out.println(" Tmax: " + Tmax);
+                                System.out.println(" Bres" + Bres[0] + " " + Bres[1] + " " +
+                                        Bres[2] + " " + Bres[3]);
+                                for (List<Integer> elem : xyTime) {
+                                    System.out.println(elem);
+                                }
                                 countNotEq++;
                             }
-                            System.out.println("  DONE ASYMPTOTIC SCHEDULE");
+                            long finish = System.currentTimeMillis();
+                            long elapsed = finish - start;
+                            //System.out.println(" Прошло времени, мс: " + elapsed);
+                            longCountTime += elapsed;
+                            //System.out.println("  DONE ASYMPTOTIC SCHEDULE");
+                            break;
                         }
                     }
                 } else {
@@ -140,13 +156,20 @@ public class FileReaderClass30 {
             System.out.println(" ВСЕГО ПОСТРОЕНО РАСПИСАНИЙ: " + count);
             System.out.println(" ИЗ НИХ ПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countEq);
             System.out.println(" НЕПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countNotEq);
+            System.out.println(" Среднее время выполнения одного проекта в мс: " + longCountTime / count);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
+
+        LocalTime startTime = LocalTime.now();
         readLines();
+        LocalTime finishTime = LocalTime.now();
+        System.out.println(" 30 JOBS ---> ");
+        System.out.println(" Начало работы алгоритма: " + startTime);
+        System.out.println(" Конец работы алгоритма: " + finishTime);
     }
 }
 

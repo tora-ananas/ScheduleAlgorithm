@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class AsymptoticSchedule {
+public class AsymptoticScheduleDouble {
 
     public static int[][] asymptSchedule(int n, List<List<Integer>> xyTime, int Tmax, int[] Bres){
         int Tcritical = TimeCritical.earlyMoment(xyTime, n);
@@ -20,7 +20,7 @@ public class AsymptoticSchedule {
 
 
 
-            int[][] rt = new int[xyTime.size()][4];
+            double[][] rt = new double[xyTime.size()][4];
             for (int i = 0; i < xyTime.size() ; i++){
                 if (xyTime.get(i).get(2) == 0){
                     rt[i][0] = 0;
@@ -29,14 +29,14 @@ public class AsymptoticSchedule {
                     rt[i][3] = 0;
                     continue;
                 }
-                rt[i][0] = xyTime.get(i).get(3);// xyTime.get(i).get(2);
-                rt[i][1] = xyTime.get(i).get(4);// xyTime.get(i).get(2);
-                rt[i][2] = xyTime.get(i).get(5);// xyTime.get(i).get(2);
-                rt[i][3] = xyTime.get(i).get(6);// xyTime.get(i).get(2);
+                rt[i][0] = (double) xyTime.get(i).get(3)/ xyTime.get(i).get(2);
+                rt[i][1] = (double) xyTime.get(i).get(4)/ xyTime.get(i).get(2);
+                rt[i][2] = (double) xyTime.get(i).get(5)/ xyTime.get(i).get(2);
+                rt[i][3] = (double) xyTime.get(i).get(6)/ xyTime.get(i).get(2);
             }
 
             //count bRes and Bres here.
-            int[][] tMoments = new int[xyTime.size()][2+4];
+            double[][] tMoments = new double[xyTime.size()][2+4];
             for (int i = 0; i < xyTime.size(); i++){
                 tMoments[i][0] = lateMoments[i];
                 tMoments[i][1] = lateMoments[i] + xyTime.get(i).get(2);
@@ -47,7 +47,7 @@ public class AsymptoticSchedule {
             }
 
             boolean sorted = false;
-            int[] temp = new int[6];
+            double[] temp = new double[6];
 
             while(!sorted) {
                 sorted = true;
@@ -65,14 +65,14 @@ public class AsymptoticSchedule {
                         sorted = false;
                     }
                 }
-                tCtriticalStart = tMoments[0][0];
-                tCtriticalFinish = tMoments[tMoments.length-1][1];
+                tCtriticalStart = (int) tMoments[0][0];
+                tCtriticalFinish = (int) tMoments[tMoments.length-1][1];
             }
 
-            int[][] bRes = new int[Tcritical][4];
-            int[][] SRes = new int[Tcritical][4];
-            int[][] QRes = new int[Tcritical][4];
-            int[][] BfinRes = new int[Tcritical][4];
+            double[][] bRes = new double[Tcritical][4];
+            double[][] SRes = new double[Tcritical][4];
+            double[][] QRes = new double[Tcritical][4];
+            double[][] BfinRes = new double[Tcritical][4];
 
 
             for (int i = 0; i < Tcritical; i++){
@@ -90,14 +90,14 @@ public class AsymptoticSchedule {
             }
 
             for (int i = 0; i < Tcritical; i++){
-                int sumb1 = 0;
-                int sumb2 = 0;
-                int sumb3 = 0;
-                int sumb4 = 0;
-                int sumB1 = 0;
-                int sumB2 = 0;
-                int sumB3 = 0;
-                int sumB4 = 0;
+                double sumb1 = 0;
+                double sumb2 = 0;
+                double sumb3 = 0;
+                double sumb4 = 0;
+                double sumB1 = 0;
+                double sumB2 = 0;
+                double sumB3 = 0;
+                double sumB4 = 0;
                 for (int j = 0; j <= i; j++){
                     sumb1 += bRes[j][0];
                     sumb2 += bRes[j][1];
