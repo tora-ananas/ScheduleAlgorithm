@@ -17,6 +17,7 @@ public class FileReaderClass30 {
     static int[][] lateMomentsRes;
     static int[][] greedyAlgorithm;
     static int MPMtime = 0;
+    static int countMpm = 0;
     static int countNotEq = 0;
     static int countEq = 0;
     static int count = 0;
@@ -127,6 +128,7 @@ public class FileReaderClass30 {
 
                             //do some algorithm
                             long start = System.currentTimeMillis();
+                            //System.out.println("Print one");
                             lateMomentsRes = AsymptoticSchedule.asymptSchedule(n, xyTime, Tmax, Bres);
 
                             greedyAlgorithm = GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
@@ -135,12 +137,17 @@ public class FileReaderClass30 {
                             listTimeGreedy.add(greedyAlgorithm[1][0]);
                             listTimeMPM.add(MPMtime);
 
-                            if (lateMomentsRes[lateMomentsRes.length - 1][4] == MPMtime){
+                            if (greedyAlgorithm[1][0] == MPMtime){
                                 countEq++;
-                            } else if (lateMomentsRes[lateMomentsRes.length - 1][4] < MPMtime){
+                            } else if (greedyAlgorithm[1][0] < MPMtime){
                                 //System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
                                 //System.out.println(greedyAlgorithm[1][0] + "<-- & --> " + TCritical);
                                 //GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
+                                System.out.println("MPMtime" + MPMtime);
+                                System.out.println("greedyAlgorithm[1][0]" + greedyAlgorithm[1][0]);
+                                GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
+                                GreedyAlgorithm.drawSchedule(greedyAlgorithm, lateMomentsRes, Bres);
+                                countMpm++;
                                 countNotEq++;
                             } else {
                                 //System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
@@ -163,10 +170,11 @@ public class FileReaderClass30 {
             listGreedyMPMTime.add(listTimeGreedy);
             listGreedyMPMTime.add(listTimeMPM);
 
-            System.out.println(" END OF FILE");
+            /*System.out.println(" END OF FILE");
             System.out.println(" ВСЕГО ПОСТРОЕНО РАСПИСАНИЙ: " + count);
             System.out.println(" ИЗ НИХ ПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countEq);
             System.out.println(" НЕПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countNotEq);
+            System.out.println(" MPM COUNT: " + countMpm);*/
             //System.out.println(" Среднее время выполнения одного проекта в мс: " + longCountTime / count);
         } catch (IOException e) {
             e.printStackTrace();
@@ -184,7 +192,7 @@ public class FileReaderClass30 {
 
         listBestResults.addAll(listResult.get(0));
 
-        int iterations = 0;
+        int iterations = 1;
 
         for (int j = 1; j < iterations; j++){
             listResult = readLines();

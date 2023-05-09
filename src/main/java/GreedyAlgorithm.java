@@ -235,7 +235,7 @@ public class GreedyAlgorithm {
                 }
             }
 
-            start_job[step] = timeStartJob;
+            start_job[indexJobToTheCalendar] = timeStartJob;
             S_jobsOnCalendar.add(indexJobToTheCalendar);
             //endTimeJob-1 потому что время мы начинаем с 0 момента. поэтому мы на единицу меньше берем.
             time_ei[endTimeJob-1] = Math.max(time_ei[endTimeJob-1], timeStartJob + durationTimeJob);
@@ -270,7 +270,147 @@ public class GreedyAlgorithm {
             }
         }
         returnGreedy[1][0] = max;
+        checkIfCorrectSchedule(returnGreedy, asymptoticSchedule, Bres, n);
+        //drawSchedule(returnGreedy, asymptoticSchedule);
         return returnGreedy;
+    }
+
+    public static void drawSchedule(int[][] greedyAlgorithm, int[][] asymptoticSchedule, int[] Bres){
+        int lenghtJobs = greedyAlgorithm[0].length;
+        System.out.println();
+        for (int i = 0; i < lenghtJobs; i++){
+            int start = greedyAlgorithm[0][i];
+            int duration = asymptoticSchedule[i][2];
+            int end = start + duration;
+
+            int startIndex = asymptoticSchedule[i][0];
+            int finalIndex = asymptoticSchedule[i][1];
+            int res1 = asymptoticSchedule[i][5];
+            int res2 = asymptoticSchedule[i][6];
+            int res3 = asymptoticSchedule[i][7];
+            int res4 = asymptoticSchedule[i][8];
+
+            System.out.printf("%4s|%4s%4s%4s|%4s%4s%4s%4s|", i, startIndex, finalIndex, duration,
+                    res1, res2, res3, res4);
+
+            for (int j = 0; j < start; j++){
+                System.out.printf("%3s", "_");
+            }
+            for (int k = start; k < end; k++){
+                System.out.printf("%3s", k);
+            }
+            System.out.printf("%3s", end);
+            System.out.println();
+        }
+
+        int[] SumResourcesType1 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType2 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType3 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType4 = new int[greedyAlgorithm[1][0]];
+        for (int i = 0; i < lenghtJobs; i++){
+            int startJobNumber = greedyAlgorithm[0][i];
+            int durationJobNumber = asymptoticSchedule[i][2];
+            for (int j = startJobNumber; j < startJobNumber + durationJobNumber; j ++){
+                SumResourcesType1[j] += asymptoticSchedule[i][5];
+                SumResourcesType2[j] += asymptoticSchedule[i][6];
+                SumResourcesType3[j] += asymptoticSchedule[i][7];
+                SumResourcesType4[j] += asymptoticSchedule[i][8];
+            }
+        }
+
+        int length = greedyAlgorithm[1][0];
+
+        System.out.printf("%34s|", "Available resources");
+        System.out.print(Bres[0]);
+        System.out.println();
+
+        System.out.printf("%34s|", "resource 1");
+        for (int i = 0; i < length; i++){
+            System.out.printf("%3s", SumResourcesType1[i]);
+        }
+        System.out.println();
+
+        System.out.printf("%34s|", "Available resources");
+        System.out.print(Bres[1]);
+        System.out.println();
+
+        System.out.printf("%34s|", "resource 2");
+        for (int i = 0; i < length; i++){
+            System.out.printf("%3s", SumResourcesType2[i]);
+        }
+        System.out.println();
+
+        System.out.printf("%34s|", "Available resources");
+        System.out.print(Bres[2]);
+        System.out.println();
+
+        System.out.printf("%34s|", "resource 3");
+        for (int i = 0; i < length; i++){
+            System.out.printf("%3s", SumResourcesType3[i]);
+        }
+        System.out.println();
+
+        System.out.printf("%34s|", "Available resources");
+        System.out.print(Bres[3]);
+        System.out.println();
+
+        System.out.printf("%34s|", "resource 4");
+        for (int i = 0; i < length; i++){
+            System.out.printf("%3s", SumResourcesType4[i]);
+        }
+        System.out.println();
+
+    }
+
+    public static boolean checkIfCorrectSchedule(int[][] greedyAlgorithm, int[][] asymptoticSchedule, int[] Bres, int n){
+        //количество ребер работ
+        int lenghtJobs = greedyAlgorithm[0].length;
+        int[] SumResourcesType1 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType2 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType3 = new int[greedyAlgorithm[1][0]];
+        int[] SumResourcesType4 = new int[greedyAlgorithm[1][0]];
+        for (int i = 0; i < lenghtJobs; i++){
+            int startJobNumber = greedyAlgorithm[0][i];
+            int durationJobNumber = asymptoticSchedule[i][2];
+            for (int j = startJobNumber; j < startJobNumber + durationJobNumber; j ++){
+                SumResourcesType1[j] += asymptoticSchedule[i][5];
+                SumResourcesType2[j] += asymptoticSchedule[i][6];
+                SumResourcesType3[j] += asymptoticSchedule[i][7];
+                SumResourcesType4[j] += asymptoticSchedule[i][8];
+            }
+        }
+
+
+        int[] order = new int[n+1];
+        order[1] = 1;
+
+        for (int i = 0; i < lenghtJobs; i++){
+            for (int j = 0; j < lenghtJobs; j++){
+                int startJobNumber = greedyAlgorithm[0][j];
+                if (startJobNumber == i){
+                    int finishIndex = asymptoticSchedule[j][1];
+                    int startIndex = asymptoticSchedule[j][0];
+                    if (order[startIndex] == 1){
+                        order[finishIndex] = 1;
+                    } else {
+                        System.out.println(" ERROR WITH ORDER ON SCHEDULE!");
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < SumResourcesType1.length; i++){
+            if (SumResourcesType1[i] > Bres[0] || SumResourcesType2[i] > Bres[1] || SumResourcesType3[i] > Bres[2] ||
+                    SumResourcesType4[i] > Bres[3]){
+                System.out.println("   ERROR WITH RESOURCES!");
+            }
+            //System.out.println(i + " Resources available: " + Bres[0] + " res: " + SumResourcesType1[i]);
+            //System.out.println(i + " Resources available: " + Bres[1] + " res: " + SumResourcesType2[i]);
+            //System.out.println(i + " Resources available: " + Bres[2] + " res: " + SumResourcesType3[i]);
+            //System.out.println(i + " Resources available: " + Bres[3] + " res: " + SumResourcesType4[i]);
+        }
+        //System.out.println();
+        return true;
     }
 
     public static double[] weightFunction(int[][] asymptoticSchedule){
@@ -299,7 +439,7 @@ public class GreedyAlgorithm {
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> xyTime = new ArrayList<>();
+        /*List<List<Integer>> xyTime = new ArrayList<>();
         int[][] arr = {{1,2,1,3,2,4,4}, {1,3,2,2,3,4,5}, {2,4,5,5,1,2,1}, {3,4,3,4,1,1,1},
                 {3,5,6,1,1,2,3}, {4,6,4,2,2,2,2}, {5,6,5,3,2,1,2}, {5,7,2,2,1,2,1}, {6,8,2,1,1,1,1}, {7,8,3,1,2,1,1}};
         for (int i = 0; i < 10; i ++){
@@ -315,6 +455,7 @@ public class GreedyAlgorithm {
         asymptSchedule = AsymptoticSchedule.asymptSchedule(8 , xyTime, 20, Bres);
         double[] weightCoeff = GreedyAlgorithm.weightFunction(asymptSchedule);
         System.out.println(asymptSchedule);
-        greedyAlgorithm(asymptSchedule, 8, 20, Bres);
+        greedyAlgorithm(asymptSchedule, 8, 20, Bres);*/
+
     }
 }
