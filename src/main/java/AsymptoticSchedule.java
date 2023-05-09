@@ -1,7 +1,21 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AsymptoticSchedule {
+
+    public static void swap(int[][] tMoments, int x, int y){
+        int[] temp = new int[8];
+        for (int k = 0; k < 8; k++){
+            temp[k] = tMoments[x][k];
+        }
+        for (int k = 0; k < 8; k++){
+            tMoments[x][k] = tMoments[y][k];
+        }
+        for (int k = 0; k < 8; k++){
+            tMoments[y][k] = temp[k];
+        }
+    }
 
     public static int[][] asymptSchedule(int n, List<List<Integer>> xyTime, int Tmax, int[] Bres){
         int Tcritical = TimeCritical.earlyMoment(xyTime, n);
@@ -14,9 +28,13 @@ public class AsymptoticSchedule {
         int Leps = 0;
         int tCtriticalStart = 0;
         int tCtriticalFinish = 0;
+        int earlyMoment;
 
         while(true){
             lateMoments = LateSchedule.lateMoments(L, xyTime, n);
+            //lateMoments = LateScheduleUPD.earlyMoment(L, xyTime, n);
+            //earlyMoment = TimeCritical.earlyMoment(xyTime, n);
+
 
 
 
@@ -36,55 +54,51 @@ public class AsymptoticSchedule {
             }
 
             //count bRes and Bres here.
-            int[][] tMoments = new int[xyTime.size()][2+4];
+            //первые три переменных отвечают за номер начала работы, ночер конца работы и ее длительность
+            //следующие две переменные отвечают за поздний момент начала работы и поздний конец окончания работы
+            //четыре последние переменные это типы ресурсов
+            int[][] tMoments = new int[xyTime.size()][3+2+4];
             for (int i = 0; i < xyTime.size(); i++){
-                tMoments[i][0] = lateMoments[i];
-                tMoments[i][1] = lateMoments[i] + xyTime.get(i).get(2);
-                tMoments[i][2] = rt[i][0];
-                tMoments[i][3] = rt[i][1];
-                tMoments[i][4] = rt[i][2];
-                tMoments[i][5] = rt[i][3];
+                tMoments[i][0] = xyTime.get(i).get(0);
+                tMoments[i][1] = xyTime.get(i).get(1);
+                tMoments[i][2] = xyTime.get(i).get(2);
+                tMoments[i][3] = lateMoments[i];
+                tMoments[i][4] = lateMoments[i] + xyTime.get(i).get(2);
+                tMoments[i][5] = rt[i][0];
+                tMoments[i][6] = rt[i][1];
+                tMoments[i][7] = rt[i][2];
+                tMoments[i][8] = rt[i][3];
             }
 
-            boolean sorted = false;
-            int[] temp = new int[6];
-
-            while(!sorted) {
-                sorted = true;
-                for (int i = 0; i < tMoments.length - 1; i++) {
-                    if (tMoments[i][0] > tMoments[i+1][0]) {
-                        for (int k = 0; k < 6; k++){
-                            temp[k] = tMoments[i][k];
-                        }
-                        for (int l = 0; l < 6; l++){
-                            tMoments[i][l] = tMoments[i+1][l];
-                        }
-                        for (int m = 0; m < 6; m++){
-                            tMoments[i+1][m] = temp[m];
-                        }
-                        sorted = false;
+            //bubble sort
+            for (int i = 0; i < tMoments.length - 1; i++) {
+                for (int j = 0; j < tMoments.length - i -1; j++){
+                    if (tMoments[j][3] > tMoments[j+1][3]) {
+                        swap(tMoments, j, j+1);
                     }
                 }
-                tCtriticalStart = tMoments[0][0];
-                tCtriticalFinish = tMoments[tMoments.length-1][1];
+
             }
+            tCtriticalStart = tMoments[0][3];
+            tCtriticalFinish = tMoments[tMoments.length-1][4];
+
 
             int[][] bRes = new int[Tcritical][4];
             int[][] SRes = new int[Tcritical][4];
             int[][] QRes = new int[Tcritical][4];
             int[][] BfinRes = new int[Tcritical][4];
 
-
+            //amount of res in current time
             for (int i = 0; i < Tcritical; i++){
                 for (int j = 0; j < tMoments.length; j++){
-                    if (tMoments[j][0] > i+tCtriticalStart){
+                    if (tMoments[j][3] > i+tCtriticalStart){
                         break;
                     }
-                    if (tMoments[j][0] <= i+tCtriticalStart && tMoments[j][1] > i+tCtriticalStart){
-                        bRes[i][0] += tMoments[j][2];
-                        bRes[i][1] += tMoments[j][3];
-                        bRes[i][2] += tMoments[j][4];
-                        bRes[i][3] += tMoments[j][5];
+                    if (tMoments[j][3] <= i+tCtriticalStart && tMoments[j][4] > i+tCtriticalStart){
+                        bRes[i][0] += tMoments[j][5];
+                        bRes[i][1] += tMoments[j][6];
+                        bRes[i][2] += tMoments[j][7];
+                        bRes[i][3] += tMoments[j][8];
                     }
                 }
             }
@@ -122,22 +136,23 @@ public class AsymptoticSchedule {
             BfinRes[0][1] = Bres[1];
             BfinRes[0][2] = Bres[2];
             BfinRes[0][3] = Bres[3];
+            //System.out.println("NEW SCHEDULE");
             for (int i = 1; i < Tcritical; i++){
                 BfinRes[i][0] = Bres[0] + (QRes[i-1][0] - SRes[i-1][0]);
                 BfinRes[i][1] = Bres[1] + (QRes[i-1][1] - SRes[i-1][1]);
                 BfinRes[i][2] = Bres[2] + (QRes[i-1][2] - SRes[i-1][2]);
                 BfinRes[i][3] = Bres[3] + (QRes[i-1][3] - SRes[i-1][3]);
-                //System.out.println(BfinRes[i][0] + " <--- BFINRES1 & bRES1 ---> " + bRes[i][0]);
-                //System.out.println(BfinRes[i][1] + " <--- BFINRES2 & bRES2 ---> " + bRes[i][1]);
-                //System.out.println(BfinRes[i][2] + " <--- BFINRES3 & bRES3 ---> " + bRes[i][2]);
-                //System.out.println(BfinRes[i][3] + " <--- BFINRES4 & bRES4 ---> " + bRes[i][3]);
+                //System.out.println(i + " " + BfinRes[i][0] + " <--- BFINRES1 & bRES1 ---> " + bRes[i][0]);
+                //System.out.println(i + " " + BfinRes[i][1] + " <--- BFINRES2 & bRES2 ---> " + bRes[i][1]);
+                //System.out.println(i + " " + BfinRes[i][2] + " <--- BFINRES3 & bRES3 ---> " + bRes[i][2]);
+                //System.out.println(i + " " + BfinRes[i][3] + " <--- BFINRES4 & bRES4 ---> " + bRes[i][3]);
             }
 
 
             //check if Late Schedule is right for the resources.
             for (int i = 0; i < Tcritical; i++){
-                if (bRes[i][0] > BfinRes[i][0] && bRes[i][1] > BfinRes[i][1] &&
-                        bRes[i][2] > BfinRes[i][2] && bRes[i][3] > BfinRes[i][3]){
+                if (bRes[i][0] > BfinRes[i][0] || bRes[i][1] > BfinRes[i][1] ||
+                        bRes[i][2] > BfinRes[i][2] || bRes[i][3] > BfinRes[i][3]){
                     L1 = L;
                     break;
                 }
@@ -149,11 +164,17 @@ public class AsymptoticSchedule {
 
             if (L2 - L1 == Leps){
                 //System.out.println(" LateScheduleTime: " + L);
-                for (int i = 0; i < result[0].length; i++){
-                    result[0][i] = lateMoments[i];
+                /*for (int i = 0; i < result[0].length; i++){
+                    result[0][i] = lateMoments[i] - tCtriticalStart;
                 }
-                result[1][0] = L;
-                return result;
+                result[1][0] = tCtriticalFinish - tCtriticalStart;*/
+                for (int i = 0; i < tMoments.length; i++){
+                    tMoments[i][3] = tMoments[i][3] - tCtriticalStart;
+                    tMoments[i][4] = tMoments[i][4] - tCtriticalStart;
+                }
+                //tMoments[tMoments.len - 1][4]
+                return tMoments;
+                //return result;
             }
             else {
                 Leps = L2 - L1;
@@ -226,8 +247,64 @@ public class AsymptoticSchedule {
             }
             xyTime.add(elem);
         }
+        int[][] rang = new int[32][2];
+        for (int i = 0; i < xyTime.size(); i++){
+            rang[xyTime.get(i).get(1)-1][0] = xyTime.get(i).get(1);
+            rang[xyTime.get(i).get(1)-1][1] = Math.max(1 + rang[xyTime.get(i).get(0)-1][1] , rang[xyTime.get(i).get(1)-1][1]);
+        }
+        rang[0][0] = 1;
+        for (int[] el: rang){
+            System.out.println(el[0] + " " + el[1]);
+        }
 
-        int[][] res = asymptSchedule(32, xyTime, Tmax, Bres);
+        boolean sort = true;
+        int tempA = 0;
+        int tempB = 0;
+        while (sort){
+            sort = false;
+            for (int i = 0; i < rang.length - 1; i++){
+                if (rang[i][1] < rang[i+1][1]){
+                    tempA = rang[i][0];
+                    tempB = rang[i][1];
+                    rang[i][0] = rang[i+1][0];
+                    rang[i][1] = rang[i+1][1];
+                    rang[i+1][0] = tempA;
+                    rang[i+1][1] = tempB;
+                    sort = true;
+                }
+                if (rang[i][1] == rang[i+1][1]){
+                    if (rang[i][0] < rang[i+1][0]){
+                        tempA = rang[i][0];
+                        rang[i][0] = rang[i+1][0];
+                        rang[i+1][0] = tempA;
+                        sort = true;
+                    }
+                }
+            }
+        }
+
+        System.out.println("SORT");
+        for (int[] el: rang){
+            System.out.println(el[0] + " " + el[1]);
+        }
+
+        List<List<Integer>> xyTimeCopy = new ArrayList<>();
+        int rangSort;
+        for (int i = 1; i < rang.length; i++){
+            rangSort = rang[i][0];
+            for (List<Integer> xyElem : xyTime){
+                if (xyElem.get(0) == rangSort){
+                    xyTimeCopy.add(xyElem);
+                }
+            }
+        }
+        System.out.println("ELEMENTS");
+        for (List<Integer> elements : xyTimeCopy){
+            System.out.println(elements);
+        }
+
+
+        int[][] res = asymptSchedule(32, xyTimeCopy, Tmax, Bres);
         System.out.println(res[1][0]);
     }
 }

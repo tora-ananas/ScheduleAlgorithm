@@ -142,7 +142,7 @@ public class FileReaderClass90_120 {
                 if (precedence && requests && resourses) {
                     //do some algorithm
                     long start = System.currentTimeMillis();
-                    lateMomentsRes = AsymptoticScheduleDouble.asymptSchedule(n, xyTime, Tmax, Bres);
+                    lateMomentsRes = AsymptoticSchedule.asymptSchedule(n, xyTime, Tmax, Bres);
                     count++;
                     //System.out.println(" LATE SCHEDULE");
                     /*for (int i = 0; i < lateMomentsRes[0].length; i++){
@@ -154,6 +154,7 @@ public class FileReaderClass90_120 {
                     } else {
                         System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
                         System.out.println(lateMomentsRes[1][0] + "<-- & --> " + MPMtime);
+                        lateMomentsRes = AsymptoticSchedule.asymptSchedule(n, xyTime, Tmax, Bres);
                         countNotEq++;
                     }
                     long finish = System.currentTimeMillis();
@@ -173,7 +174,6 @@ public class FileReaderClass90_120 {
     }
 
     public static void main(String[] args) throws IOException {
-/*
         LocalTime startTime = LocalTime.now();
         List<File> filesInFolder = Files.list(Paths.get("src/main/resources/j90.sm"))
                 .filter(Files::isRegularFile)
@@ -190,9 +190,7 @@ public class FileReaderClass90_120 {
         LocalTime finishTime = LocalTime.now();
         System.out.println(" Начало работы алгоритма: " + startTime);
         System.out.println(" Конец работы алгоритма: " + finishTime);
-*/
-
-        LocalTime startTime1 = LocalTime.now();
+        /*LocalTime startTime1 = LocalTime.now();
         List<File> filesInFolder120 = Files.list(Paths.get("src/main/resources/j120.sm"))
                 .filter(Files::isRegularFile)
                 .map(Path::toFile)
@@ -208,7 +206,7 @@ public class FileReaderClass90_120 {
         //System.out.println(" ВРЕМЯ РАБОТЫ АЛГОРИТМА С УЧЕТОМ ЧТЕНИЯ ИЗ ФАЙЛА: " + );
         LocalTime finishTime1 = LocalTime.now();
         System.out.println(" Начало работы алгоритма: " + startTime1);
-        System.out.println(" Конец работы алгоритма: " + finishTime1);
+        System.out.println(" Конец работы алгоритма: " + finishTime1);*/
     }
 }
 

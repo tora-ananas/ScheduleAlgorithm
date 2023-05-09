@@ -32,16 +32,15 @@ public class TimeCritical {
     public static void main(String[] args) {
         List<List<Integer>> xyTime = new ArrayList<>();
         List<Integer> elem;
-        int[] elements = {1,2,1,1,3,2,2,4,5,3,4,3,3,5,6,4,6,4,5,6,5,5,7,2,6,8,2,7,8,3};
-        for (int i = 0; i < 30; i += 3){
+        int[] elements = {1,2,2, 1,3,1, 1,4,5, 2,4,2,
+                2,6,6, 2,7,5, 3,4,2, 3,5,7, 4,5,6, 4,6,2,
+                5,8,4, 6,8,7, 6,7,2, 7,8,4};
+        for (int i = 0; i < 42; i += 3){
             elem = new ArrayList<>();
             elem.add(elements[i]);
             elem.add(elements[i+1]);
             elem.add(elements[i+2]);
             xyTime.add(elem);
-        }
-        for (int j = 0; j < 10; j ++){
-            System.out.println(xyTime.get(j));
         }
         earlyMoment(xyTime, 8);
     }

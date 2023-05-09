@@ -12,13 +12,19 @@ public class FileReaderClass60 {
     static List<List<Integer>> xyTime;
     static int[] Bres = new int[4];
     static int[][] lateMomentsRes;
+    static int[][] greedyAlgorithm;
     static int MPMtime = 0;
     static int countNotEq = 0;
     static int countEq = 0;
     static int count = 0;
     static long longCountTime = 0;
 
-    public static void readLines(){
+    public static List<List<Integer>> readLines(){
+
+        List<List<Integer>> listGreedyMPMTime = new ArrayList<>();
+        List<Integer> listTimeMPM = new ArrayList<>();
+        List<Integer> listTimeGreedy = new ArrayList<>();
+
         File file = new File("src/main/resources/j60.sm");
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))){
@@ -117,22 +123,21 @@ public class FileReaderClass60 {
                         if (precedence && requests && resourses){
                             //do some algorithm
                             long start = System.currentTimeMillis();
-                            lateMomentsRes = AsymptoticScheduleDouble.asymptSchedule(n, xyTime, Tmax, Bres);
+                            lateMomentsRes = AsymptoticSchedule.asymptSchedule(n, xyTime, Tmax, Bres);
                             count++;
-                            //System.out.println(" LATE SCHEDULE");
-                            /*for (int i = 0; i < lateMomentsRes[0].length; i++){
-                                System.out.println("lateSchedule " + i +" : " + lateMomentsRes[0][i]);
-                            }*/
+
+                            greedyAlgorithm = GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
+                            count++;
+
+                            listTimeGreedy.add(greedyAlgorithm[1][0]);
+                            listTimeMPM.add(MPMtime);
+
                             if (lateMomentsRes[1][0] == MPMtime ){
                                 //System.out.println(" ПРОВЕРКА РАСПИСАНИЯ ПРОШЛА УСПЕШНО");
                                 countEq++;
                             } else {
-                                System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
-                                System.out.println(lateMomentsRes[1][0] + "<-- & --> " + MPMtime);
-                                /*for (int i = 0; i < lateMomentsRes[0].length; i++){
-                                System.out.println("lateSchedule " + i +" : " + lateMomentsRes[0][i]);
-                                }*/
-                                lateMomentsRes = AsymptoticScheduleDouble.asymptSchedule(n, xyTime, Tmax, Bres);
+                                //System.out.println(" ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR!!!");
+                                //System.out.println(lateMomentsRes[1][0] + "<-- & --> " + MPMtime);
                                 countNotEq++;
 
                             }
@@ -147,26 +152,69 @@ public class FileReaderClass60 {
                 } else {
                     line = br.readLine();
                 }
-
             }
+            listGreedyMPMTime.add(listTimeGreedy);
+            listGreedyMPMTime.add(listTimeMPM);
+
             System.out.println(" END OF FILE");
-            System.out.println(" ВСЕГО ПОСТРОЕНО РАСПИСАНИЙ: " + count);
-            System.out.println(" ИЗ НИХ ПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countEq);
-            System.out.println(" НЕПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countNotEq);
-            System.out.println(" Среднее время выполнения одного проекта в мс: " + longCountTime / count);
+            //System.out.println(" ВСЕГО ПОСТРОЕНО РАСПИСАНИЙ: " + count);
+            //System.out.println(" ИЗ НИХ ПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countEq);
+            //System.out.println(" НЕПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countNotEq);
+            //System.out.println(" Среднее время выполнения одного проекта в мс: " + longCountTime / count);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return listGreedyMPMTime;
     }
 
     public static void main(String[] args) {
 
         LocalTime startTime = LocalTime.now();
-        readLines();
-        LocalTime finishTime = LocalTime.now();
+        List<Integer> listBestResults = new ArrayList<>();
+        List<List<Integer>> listResult = new ArrayList<>();
+
+        listResult = readLines();
+
+        listBestResults.addAll(listResult.get(0));
+
+        int iterations = 1000;
+
+        for (int j = 1; j < iterations; j++){
+            listResult = readLines();
+            for (int i = 0; i < listResult.get(0).size(); i++){
+                if (listResult.get(0).get(i) < listBestResults.get(i)){
+                    listBestResults.set(i, listResult.get(0).get(i));
+                    //System.out.println("REPLACE ELEMENT " + i);
+                }
+            }
+        }
+
+        int count = 0;
+        int relativeError = 0;
+        int averageRelativeError = 0;
+        int countErrors = 0;
+
+        for (int j = 0; j < listBestResults.size(); j++){
+            relativeError = (Math.abs(listBestResults.get(j) - listResult.get(1).get(j)) / listResult.get(1).get(j)) * 100;
+            countErrors = countErrors + relativeError;
+            count++;
+            //System.out.println("Relative error = " + relativeError);
+        }
+
+        averageRelativeError = countErrors / count;
+
         System.out.println(" 60 JOBS ---> ");
+        System.out.println(" ВСЕГО ПОСТРОЕНО РАСПИСАНИЙ: " + count);
+        System.out.println(" ВСЕГО ИТЕРАЦИЙ: " + iterations);
+        System.out.println("Средняя относительная ошибка: " + averageRelativeError);
+
+
+
+        LocalTime finishTime = LocalTime.now();
+
         System.out.println(" Начало работы алгоритма: " + startTime);
         System.out.println(" Конец работы алгоритма: " + finishTime);
+
     }
 }
 
