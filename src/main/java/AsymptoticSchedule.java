@@ -17,6 +17,22 @@ public class AsymptoticSchedule {
         }
     }
 
+    public static void resourcePerJob(List<List<Integer>> xyTime, int[][] rt){
+        for (int i = 0; i < xyTime.size() ; i++){
+            if (xyTime.get(i).get(2) == 0){
+                rt[i][0] = 0;
+                rt[i][1] = 0;
+                rt[i][2] = 0;
+                rt[i][3] = 0;
+                continue;
+            }
+            rt[i][0] = xyTime.get(i).get(3);
+            rt[i][1] = xyTime.get(i).get(4);
+            rt[i][2] = xyTime.get(i).get(5);
+            rt[i][3] = xyTime.get(i).get(6);
+        }
+    }
+
     public static int[][] asymptSchedule(int n, List<List<Integer>> xyTime, int Tmax, int[] Bres){
         int Tcritical = TimeCritical.earlyMoment(xyTime, n);
         double epsilon = 1; //(double)Tmax / (double)(n*Tcritical);
@@ -32,26 +48,10 @@ public class AsymptoticSchedule {
 
         while(true){
             lateMoments = LateSchedule.lateMoments(L, xyTime, n);
-            //lateMoments = LateScheduleUPD.earlyMoment(L, xyTime, n);
-            //earlyMoment = TimeCritical.earlyMoment(xyTime, n);
 
-
-
-
+            //resource per job
             int[][] rt = new int[xyTime.size()][4];
-            for (int i = 0; i < xyTime.size() ; i++){
-                if (xyTime.get(i).get(2) == 0){
-                    rt[i][0] = 0;
-                    rt[i][1] = 0;
-                    rt[i][2] = 0;
-                    rt[i][3] = 0;
-                    continue;
-                }
-                rt[i][0] = xyTime.get(i).get(3);// xyTime.get(i).get(2);
-                rt[i][1] = xyTime.get(i).get(4);// xyTime.get(i).get(2);
-                rt[i][2] = xyTime.get(i).get(5);// xyTime.get(i).get(2);
-                rt[i][3] = xyTime.get(i).get(6);// xyTime.get(i).get(2);
-            }
+            resourcePerJob(xyTime, rt);
 
             //count bRes and Bres here.
             //первые три переменных отвечают за номер начала работы, ночер конца работы и ее длительность
@@ -77,8 +77,8 @@ public class AsymptoticSchedule {
                         swap(tMoments, j, j+1);
                     }
                 }
-
             }
+
             tCtriticalStart = tMoments[0][3];
             tCtriticalFinish = tMoments[tMoments.length-1][4];
 
@@ -163,11 +163,7 @@ public class AsymptoticSchedule {
             }
 
             if (L2 - L1 == Leps){
-                //System.out.println(" LateScheduleTime: " + L);
-                /*for (int i = 0; i < result[0].length; i++){
-                    result[0][i] = lateMoments[i] - tCtriticalStart;
-                }
-                result[1][0] = tCtriticalFinish - tCtriticalStart;*/
+
                 for (int i = 0; i < tMoments.length; i++){
                     tMoments[i][3] = tMoments[i][3] - tCtriticalStart;
                     tMoments[i][4] = tMoments[i][4] - tCtriticalStart;

@@ -21,6 +21,129 @@ public class GreedyAlgorithm {
     //7 - третий тип ресурса
     //8 - четвертый тип ресурса
 
+    public static double[] weightFunction(int[][] asymptoticSchedule){
+        int len = asymptoticSchedule.length;
+        double[] weightCoefficient = new double[len];
+        int c1 = 1;
+        double c2 = 0.1;
+        int w1 = 1;
+        int w2 = 1;
+        int w3 = 1;
+        int w4 = 2;
+        for (int i = 0; i < len; i++){
+            int startTimeJob = asymptoticSchedule[i][3];
+            int durationTimeJob = asymptoticSchedule[i][2];
+            int r1 = asymptoticSchedule[i][5];
+            int r2 = asymptoticSchedule[i][6];
+            int r3 = asymptoticSchedule[i][7];
+            int r4 = asymptoticSchedule[i][8];
+            int max1 = Math.max( (w1 * r1 * durationTimeJob),
+                    (w2 * r2 * durationTimeJob) );
+            int max2 = Math.max( (w3 * r3 * durationTimeJob),
+                    (w4 * r4 * durationTimeJob) );
+            weightCoefficient[i] = c1 * startTimeJob - c2 * Math.max(max1,max2);
+        }
+        return weightCoefficient;
+    }
+
+    //заполнение списка D_jobsNotOnCalendar работами с весовыми коэффициентами 
+    //и упорядочивание их по возрастанию коэффициентов
+    public static void fillInJobsByWeightFunction(List<List<Double>> D_jobsNotOnCalendar, 
+                                                  int length, double[] weightCoefficients){
+        for (int i = 0; i < length; i++){
+            List<Double> listOfJobWeightFunc = new ArrayList<>();
+            double weightElement = weightCoefficients[i];
+            listOfJobWeightFunc.add((double) i);
+            listOfJobWeightFunc.add(weightElement);
+            D_jobsNotOnCalendar.add(listOfJobWeightFunc);
+        }
+
+        //отсортируем лист по возрастанию весовых функций
+        Collections.sort(D_jobsNotOnCalendar, new ComparatorByWeightFunc());        
+    }
+
+    public static void removeFromListOfIntegers(List<Integer> list, int index){
+        for (int i = 0; i < list.size(); i++){
+            if (list.get(i) == index){
+                list.remove(i);
+            }
+        }
+    }
+
+    public static void removeFromListOfListsOfDoubles(List<List<Double>> D_jobsNotOnCalendar, int index){
+        for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
+            double indexFromList = D_jobsNotOnCalendar.get(i).get(0);
+            int idx = (int)indexFromList;
+            if (idx == index){
+                D_jobsNotOnCalendar.remove(i);
+                break;
+            }
+        }
+    }
+
+    public static int controlResourcesAvailabilities(int timeStartJob, int durationTimeJob, int TMAX,
+                                                      int res1, int res2, int res3, int res4,
+                                                      int[] resourceAvailable_type1_time, int[] resourceAvailable_type2_time,
+                                                      int[] resourceAvailable_type3_time, int[] resourceAvailable_type4_time){
+        boolean flag = true;
+        while (flag) {
+            int duration = timeStartJob + durationTimeJob;
+            if(duration >= TMAX){
+                return -1;
+            }
+            for (int t = timeStartJob; t < duration; t++){
+                if (res1 <= resourceAvailable_type1_time[t] && res2 <= resourceAvailable_type2_time[t]
+                        && res3 <= resourceAvailable_type3_time[t] && res4 <= resourceAvailable_type4_time[t]) {
+                    flag = false;
+                } else {
+                    timeStartJob = timeStartJob + 1;
+                    flag = true;
+                    break;
+                }
+            }
+            if(duration == 0){
+                flag = false;
+            }
+        }
+        return timeStartJob;
+    }
+
+    public static void calculateResourceAvailabilities(int timeStartJob, int durationTimeJob,
+                                                       int res1, int res2, int res3, int res4,
+                                                       int[] resourceAvailable_type1_time, int[] resourceAvailable_type2_time,
+                                                       int[] resourceAvailable_type3_time, int[] resourceAvailable_type4_time){
+        int durationFromTimeStart = timeStartJob + durationTimeJob;
+        for (int t = timeStartJob; t < durationFromTimeStart; t++){
+            resourceAvailable_type1_time[t] =  resourceAvailable_type1_time[t] - res1;
+            resourceAvailable_type2_time[t] =  resourceAvailable_type2_time[t] - res2;
+            resourceAvailable_type3_time[t] =  resourceAvailable_type3_time[t] - res3;
+            resourceAvailable_type4_time[t] =  resourceAvailable_type4_time[t] - res4;
+        }
+    }
+
+    public static int chooseIndexJobToCalendar(List<Integer> listProbabilityJobs){
+        int indexJobToTheCalendar = -1;
+        for (int elem: listProbabilityJobs){
+            double probability = Math.random();
+            if (probability >= 0.5){
+                indexJobToTheCalendar = elem;
+
+                //удаляет по нужному нам элементу
+                removeFromListOfIntegers(listProbabilityJobs, indexJobToTheCalendar);
+                break;
+            }
+        }
+
+        if (indexJobToTheCalendar == -1){
+            Random rand = new Random();
+            indexJobToTheCalendar = listProbabilityJobs.get(rand.nextInt(listProbabilityJobs.size()));
+
+            //удаляет по нужному нам элементу
+            removeFromListOfIntegers(listProbabilityJobs, indexJobToTheCalendar);
+        }
+        return indexJobToTheCalendar;
+    }
+
     public static int[][] greedyAlgorithm(int[][] asymptoticSchedule, int n, int Tmax, int[] Bres){
         int len = asymptoticSchedule.length;
         int[][] returnGreedy = new int[2][len];
@@ -48,19 +171,10 @@ public class GreedyAlgorithm {
         //после наложения работы на календарь мы ее из листа удалим.
         List<List<Double>> D_jobsNotOnCalendar = new ArrayList<>();
         List<Integer> S_jobsOnCalendar = new ArrayList<>();
+        
+        fillInJobsByWeightFunction(D_jobsNotOnCalendar, len, weightCoefficients);
 
-        for (int i = 0; i < len; i++){
-            List<Double> listOfJobWeightFunc = new ArrayList<>();
-            double weightElement = weightCoefficients[i];
-            listOfJobWeightFunc.add((double) i);
-            listOfJobWeightFunc.add(weightElement);
-            D_jobsNotOnCalendar.add(listOfJobWeightFunc);
-        }
-
-        //отсортируем лист по возрастанию весовых функций
-        Collections.sort(D_jobsNotOnCalendar, new ComparatorByWeightFunc());
-        //System.out.println(D_jobsNotOnCalendar);
-
+        //инициализируем доступность ресурсов в каждый момент времени по типам ресурсов
         for (int i = 0; i < TMAX; i++){
             resourceAvailable_type1_time[i] = Bres[0];
             resourceAvailable_type2_time[i] = Bres[1];
@@ -71,39 +185,15 @@ public class GreedyAlgorithm {
         //предварительно занесем в Sg одну работу с номером 1 начального события
         List<Integer> listProbabilityJobs = new ArrayList<>();
         for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
-            double numOfJob = D_jobsNotOnCalendar.get(i).get(0);
-            int indexJob = (int)numOfJob;
-            if (asymptoticSchedule[indexJob][0] == 1){
-                listProbabilityJobs.add(indexJob);
+            double numberOfJob = D_jobsNotOnCalendar.get(i).get(0);
+            int numberOfProbablyJob = (int)numberOfJob;
+            if (asymptoticSchedule[numberOfProbablyJob][0] == 1){
+                listProbabilityJobs.add(numberOfProbablyJob);
             }
         }
 
-        int indexJobToTheCalendar = -1;
-        for (int elem: listProbabilityJobs){
-            double probability = Math.random();
-            if (probability >= 0.5){
-                indexJobToTheCalendar = elem;
-                //удаляет по нужному нам элементу
-                for (int i = 0; i < listProbabilityJobs.size(); i++){
-                    if (listProbabilityJobs.get(i) == indexJobToTheCalendar){
-                        listProbabilityJobs.remove(i);
-                    }
-                }
-                break;
-            } else {
-                continue;
-            }
-        }
-        if (indexJobToTheCalendar == -1){
-            Random rand = new Random();
-            indexJobToTheCalendar = listProbabilityJobs.get(rand.nextInt(listProbabilityJobs.size()));
-            //удаляет по нужному нам элементу
-            for (int i = 0; i < listProbabilityJobs.size(); i++){
-                if (listProbabilityJobs.get(i) == indexJobToTheCalendar){
-                    listProbabilityJobs.remove(i);
-                }
-            }
-        }
+        //выберем работу для назначения ей времени свершения
+        int indexJobToTheCalendar = chooseIndexJobToCalendar(listProbabilityJobs);
 
         int startMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
         int endMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
@@ -113,24 +203,16 @@ public class GreedyAlgorithm {
         int res3 = asymptoticSchedule[indexJobToTheCalendar][7];
         int res4 = asymptoticSchedule[indexJobToTheCalendar][8];
 
-        int timeStartJob = time_ei[startMomentTimeJob];
-        boolean flag = true;
+        int timeStartJobFromTimeEi = time_ei[startMomentTimeJob];
 
-        while (flag) {
-            int duration = timeStartJob + durationTimeJob;
-            for (int t = timeStartJob; t < duration; t++){
-                if (res1 <= resourceAvailable_type1_time[t] && res2 <= resourceAvailable_type2_time[t]
-                        && res3 <= resourceAvailable_type3_time[t] && res4 <= resourceAvailable_type4_time[t]) {
-                    flag = false;
-                } else {
-                    timeStartJob = timeStartJob + 1;
-                    flag = true;
-                    break;
-                }
-            }
-            if(duration == 0){
-                flag = false;
-            }
+        //проверить на соблюдение ресурсов в каждый момент времени
+        int timeStartJob = controlResourcesAvailabilities(timeStartJobFromTimeEi, durationTimeJob, TMAX,
+                res1, res2, res3, res4,
+                resourceAvailable_type1_time, resourceAvailable_type2_time,
+                resourceAvailable_type3_time, resourceAvailable_type4_time);
+
+        if (timeStartJob == -1) {
+            return returnGreedy;
         }
 
         start_job[0] = timeStartJob;
@@ -138,22 +220,13 @@ public class GreedyAlgorithm {
         time_ei[endMomentTimeJob] = Math.max(time_ei[endMomentTimeJob], timeStartJob + durationTimeJob);
 
         //пересчитать доступные ресурсы
-        int duration = timeStartJob + durationTimeJob;
-        for (int t = timeStartJob; t < duration; t++){
-            resourceAvailable_type1_time[t] =  resourceAvailable_type1_time[t] - res1;
-            resourceAvailable_type2_time[t] =  resourceAvailable_type2_time[t] - res2;
-            resourceAvailable_type3_time[t] =  resourceAvailable_type3_time[t] - res3;
-            resourceAvailable_type4_time[t] =  resourceAvailable_type4_time[t] - res4;
-        }
+        calculateResourceAvailabilities(timeStartJob, durationTimeJob,
+                res1, res2, res3, res4,
+                resourceAvailable_type1_time, resourceAvailable_type2_time,
+                resourceAvailable_type3_time, resourceAvailable_type4_time);
 
-        for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
-            double index = D_jobsNotOnCalendar.get(i).get(0);
-            int idx = (int)index;
-            if (idx == indexJobToTheCalendar){
-                D_jobsNotOnCalendar.remove(i);
-                break;
-            }
-        }
+        //удалить наложенную работу из множества нерасмотренных работ
+        removeFromListOfListsOfDoubles(D_jobsNotOnCalendar, indexJobToTheCalendar);
 
         System.out.printf("%2s|", indexJobToTheCalendar);
         System.out.printf(" %2s ", startMomentTimeJob);
@@ -167,7 +240,7 @@ public class GreedyAlgorithm {
         //start main loop
         for (int step = 1; step < len; step++){
 
-
+            //TODO: переделать выбор работы, посчитав степень каждой вершины и соблюдая частичный порядок
             for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
                 double numOfJob = D_jobsNotOnCalendar.get(i).get(0);
                 int indexJob = (int)numOfJob;
@@ -182,33 +255,8 @@ public class GreedyAlgorithm {
                 }
             }
 
-            indexJobToTheCalendar = -1;
-            for (int elem: listProbabilityJobs){
-                double probability = Math.random();
-                if (probability >= 0.5){
-                    indexJobToTheCalendar = elem;
-                    //удаляет по нужному нам элементу
-                    for (int i = 0; i < listProbabilityJobs.size(); i++){
-                        if (listProbabilityJobs.get(i) == indexJobToTheCalendar){
-                            listProbabilityJobs.remove(i);
-                        }
-                    }
-                    break;
-                } else {
-                    continue;
-                }
-            }
-
-            if (indexJobToTheCalendar == -1){
-                Random rand = new Random();
-                indexJobToTheCalendar = listProbabilityJobs.get(rand.nextInt(listProbabilityJobs.size()));
-                //удаляет по нужному нам элементу
-                for (int i = 0; i < listProbabilityJobs.size(); i++){
-                    if (listProbabilityJobs.get(i) == indexJobToTheCalendar){
-                        listProbabilityJobs.remove(i);
-                    }
-                }
-            }
+            //выберем работу для назначения времени свершения
+            indexJobToTheCalendar = chooseIndexJobToCalendar(listProbabilityJobs);
 
             startMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
             endMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
@@ -218,34 +266,19 @@ public class GreedyAlgorithm {
             res3 = asymptoticSchedule[indexJobToTheCalendar][7];
             res4 = asymptoticSchedule[indexJobToTheCalendar][8];
 
-            timeStartJob = time_ei[startMomentTimeJob];
-            flag = true;
+            timeStartJobFromTimeEi = time_ei[startMomentTimeJob];
+            //проверить на соблюдение ресурсов в каждый момент времени
+            timeStartJob = controlResourcesAvailabilities(timeStartJobFromTimeEi, durationTimeJob, TMAX,
+                    res1, res2, res3, res4,
+                    resourceAvailable_type1_time, resourceAvailable_type2_time,
+                    resourceAvailable_type3_time, resourceAvailable_type4_time);
 
-            while (flag) {
-                duration = timeStartJob + durationTimeJob;
-                if(duration >= TMAX){
-                    System.out.println("   !!!THERE IS NO AVAILABLE SCHEDULE!!!");
-                    return returnGreedy;
-                }
-                for (int t = timeStartJob; t < duration; t++){
-                    if (res1 <= resourceAvailable_type1_time[t] && res2 <= resourceAvailable_type2_time[t]
-                            && res3 <= resourceAvailable_type3_time[t] && res4 <= resourceAvailable_type4_time[t]) {
-                        flag = false;
-                    } else {
-                        timeStartJob = timeStartJob + 1;
-
-                        flag = true;
-                        break;
-                    }
-                }
-                if(duration == 0){
-                    flag = false;
-                }
+            if (timeStartJob == -1) {
+                return returnGreedy;
             }
 
             start_job[indexJobToTheCalendar] = timeStartJob;
             S_jobsOnCalendar.add(indexJobToTheCalendar);
-            //endMomenntTimeJob-1 потому что время мы начинаем с 0 момента. поэтому мы на единицу меньше берем.
             time_ei[endMomentTimeJob] = Math.max(time_ei[endMomentTimeJob], timeStartJob + durationTimeJob);
 
             System.out.printf("%2s|", indexJobToTheCalendar);
@@ -257,35 +290,28 @@ public class GreedyAlgorithm {
             System.out.println();
 
             //пересчитать доступные ресурсы
-            duration = timeStartJob + durationTimeJob;
-            for (int t = timeStartJob; t < duration; t++){
-                resourceAvailable_type1_time[t] =  resourceAvailable_type1_time[t] - res1;
-                resourceAvailable_type2_time[t] =  resourceAvailable_type2_time[t] - res2;
-                resourceAvailable_type3_time[t] =  resourceAvailable_type3_time[t] - res3;
-                resourceAvailable_type4_time[t] =  resourceAvailable_type4_time[t] - res4;
-            }
+            calculateResourceAvailabilities(timeStartJob, durationTimeJob,
+                    res1, res2, res3, res4,
+                    resourceAvailable_type1_time, resourceAvailable_type2_time,
+                    resourceAvailable_type3_time, resourceAvailable_type4_time);
 
-            for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
-                double index = D_jobsNotOnCalendar.get(i).get(0);
-                int idx = (int)index;
-                if (idx == indexJobToTheCalendar){
-                    D_jobsNotOnCalendar.remove(i);
-                    break;
-                }
-            }
-
+            //удалить наложенную работу из множества нерасмотренных работ
+            removeFromListOfListsOfDoubles(D_jobsNotOnCalendar, indexJobToTheCalendar);
         }
 
+        //запишем в результирующий массив времена начал для каждой работы
         for (int i = 0; i < len; i++){
             returnGreedy[0][i] = start_job[i];
         }
 
+        //найдем длительность выполнения проекта
         int max = 0;
         for (int i = 0; i < n; i++){
             if (time_ei[i] > max){
                 max = time_ei[i];
             }
         }
+
         returnGreedy[1][0] = max;
         //checkIfCorrectSchedule(returnGreedy, asymptoticSchedule, Bres, n);
         //drawSchedule(returnGreedy, asymptoticSchedule);
@@ -454,30 +480,7 @@ public class GreedyAlgorithm {
         return true;
     }
 
-    public static double[] weightFunction(int[][] asymptoticSchedule){
-        int len = asymptoticSchedule.length;
-        double[] weightCoefficient = new double[len];
-        int c1 = 1;
-        double c2 = 0.1;
-        int w1 = 1;
-        int w2 = 1;
-        int w3 = 1;
-        int w4 = 2;
-        for (int i = 0; i < len; i++){
-            int startTimeJob = asymptoticSchedule[i][3];
-            int durationTimeJob = asymptoticSchedule[i][2];
-            int r1 = asymptoticSchedule[i][5];
-            int r2 = asymptoticSchedule[i][6];
-            int r3 = asymptoticSchedule[i][7];
-            int r4 = asymptoticSchedule[i][8];
-            int max1 = Math.max( (w1 * r1 * durationTimeJob),
-                    (w2 * r2 * durationTimeJob) );
-            int max2 = Math.max( (w3 * r3 * durationTimeJob),
-                    (w4 * r4 * durationTimeJob) );
-            weightCoefficient[i] = c1 * startTimeJob - c2 * Math.max(max1,max2);
-        }
-        return weightCoefficient;
-    }
+
 
     public static void main(String[] args) {
         /*List<List<Integer>> xyTime = new ArrayList<>();

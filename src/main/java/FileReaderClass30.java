@@ -146,7 +146,7 @@ public class FileReaderClass30 {
                                 System.out.println("MPMtime" + MPMtime);
                                 System.out.println("greedyAlgorithm[1][0]" + greedyAlgorithm[1][0]);
                                 GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
-                                GreedyAlgorithm.drawSchedule(greedyAlgorithm, lateMomentsRes, Bres);
+                                //GreedyAlgorithm.drawSchedule(greedyAlgorithm, lateMomentsRes, Bres);
                                 GreedyAlgorithm.checkPredecessors(greedyAlgorithm,lateMomentsRes);
                                 countMpm++;
                                 countNotEq++;
