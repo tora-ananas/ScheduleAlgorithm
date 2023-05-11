@@ -147,6 +147,7 @@ public class FileReaderClass30 {
                                 System.out.println("greedyAlgorithm[1][0]" + greedyAlgorithm[1][0]);
                                 GreedyAlgorithm.greedyAlgorithm(lateMomentsRes, n, Tmax, Bres);
                                 GreedyAlgorithm.drawSchedule(greedyAlgorithm, lateMomentsRes, Bres);
+                                GreedyAlgorithm.checkPredecessors(greedyAlgorithm,lateMomentsRes);
                                 countMpm++;
                                 countNotEq++;
                             } else {
@@ -176,6 +177,7 @@ public class FileReaderClass30 {
             System.out.println(" НЕПРАВИЛЬНЫХ РАСПИСАНИЙ: " + countNotEq);
             System.out.println(" MPM COUNT: " + countMpm);*/
             //System.out.println(" Среднее время выполнения одного проекта в мс: " + longCountTime / count);
+            System.out.println(" MPM COUNT: " + countMpm);
         } catch (IOException e) {
             e.printStackTrace();
         }

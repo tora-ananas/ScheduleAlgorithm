@@ -25,7 +25,7 @@ public class GreedyAlgorithm {
         int len = asymptoticSchedule.length;
         int[][] returnGreedy = new int[2][len];
         int[] start_job = new int[len];
-        int[] time_ei = new int[n];
+        int[] time_ei = new int[n+1];
 
         //посчитаем горизонт планирования просуммировав длительности работ
         int TmaxJobDuration = 0;
@@ -90,7 +90,7 @@ public class GreedyAlgorithm {
                     }
                 }
                 break;
-            }else {
+            } else {
                 continue;
             }
         }
@@ -105,15 +105,15 @@ public class GreedyAlgorithm {
             }
         }
 
-        int startTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
-        int endTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
+        int startMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
+        int endMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
         int durationTimeJob = asymptoticSchedule[indexJobToTheCalendar][2];
         int res1 = asymptoticSchedule[indexJobToTheCalendar][5];
         int res2 = asymptoticSchedule[indexJobToTheCalendar][6];
         int res3 = asymptoticSchedule[indexJobToTheCalendar][7];
         int res4 = asymptoticSchedule[indexJobToTheCalendar][8];
 
-        int timeStartJob = time_ei[startTimeJob-1];
+        int timeStartJob = time_ei[startMomentTimeJob];
         boolean flag = true;
 
         while (flag) {
@@ -135,7 +135,7 @@ public class GreedyAlgorithm {
 
         start_job[0] = timeStartJob;
         S_jobsOnCalendar.add(indexJobToTheCalendar);
-        time_ei[endTimeJob-1] = Math.max(time_ei[endTimeJob-1], timeStartJob + durationTimeJob);
+        time_ei[endMomentTimeJob] = Math.max(time_ei[endMomentTimeJob], timeStartJob + durationTimeJob);
 
         //пересчитать доступные ресурсы
         int duration = timeStartJob + durationTimeJob;
@@ -155,11 +155,19 @@ public class GreedyAlgorithm {
             }
         }
 
+        System.out.printf("%2s|", indexJobToTheCalendar);
+        System.out.printf(" %2s ", startMomentTimeJob);
+        System.out.printf(" %2s ", endMomentTimeJob);
+        System.out.printf(" %2s |", durationTimeJob);
+        System.out.printf(" %2s ", timeStartJob);
+        System.out.printf(" %2s ", time_ei[endMomentTimeJob]);
+        System.out.println();
+
 
         //start main loop
         for (int step = 1; step < len; step++){
-            //System.out.println("print " + step);
-            //List<Integer> listProbabilityJobsStep = new ArrayList<>();
+
+
             for (int i = 0; i < D_jobsNotOnCalendar.size(); i++){
                 double numOfJob = D_jobsNotOnCalendar.get(i).get(0);
                 int indexJob = (int)numOfJob;
@@ -202,15 +210,15 @@ public class GreedyAlgorithm {
                 }
             }
 
-            startTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
-            endTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
+            startMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][0];
+            endMomentTimeJob = asymptoticSchedule[indexJobToTheCalendar][1];
             durationTimeJob = asymptoticSchedule[indexJobToTheCalendar][2];
             res1 = asymptoticSchedule[indexJobToTheCalendar][5];
             res2 = asymptoticSchedule[indexJobToTheCalendar][6];
             res3 = asymptoticSchedule[indexJobToTheCalendar][7];
             res4 = asymptoticSchedule[indexJobToTheCalendar][8];
 
-            timeStartJob = time_ei[startTimeJob-1];
+            timeStartJob = time_ei[startMomentTimeJob];
             flag = true;
 
             while (flag) {
@@ -237,8 +245,16 @@ public class GreedyAlgorithm {
 
             start_job[indexJobToTheCalendar] = timeStartJob;
             S_jobsOnCalendar.add(indexJobToTheCalendar);
-            //endTimeJob-1 потому что время мы начинаем с 0 момента. поэтому мы на единицу меньше берем.
-            time_ei[endTimeJob-1] = Math.max(time_ei[endTimeJob-1], timeStartJob + durationTimeJob);
+            //endMomenntTimeJob-1 потому что время мы начинаем с 0 момента. поэтому мы на единицу меньше берем.
+            time_ei[endMomentTimeJob] = Math.max(time_ei[endMomentTimeJob], timeStartJob + durationTimeJob);
+
+            System.out.printf("%2s|", indexJobToTheCalendar);
+            System.out.printf(" %2s ", startMomentTimeJob);
+            System.out.printf(" %2s ", endMomentTimeJob);
+            System.out.printf(" %2s |", durationTimeJob);
+            System.out.printf(" %2s ", timeStartJob);
+            System.out.printf(" %2s ", time_ei[endMomentTimeJob]);
+            System.out.println();
 
             //пересчитать доступные ресурсы
             duration = timeStartJob + durationTimeJob;
@@ -257,6 +273,7 @@ public class GreedyAlgorithm {
                     break;
                 }
             }
+
         }
 
         for (int i = 0; i < len; i++){
@@ -270,8 +287,9 @@ public class GreedyAlgorithm {
             }
         }
         returnGreedy[1][0] = max;
-        checkIfCorrectSchedule(returnGreedy, asymptoticSchedule, Bres, n);
+        //checkIfCorrectSchedule(returnGreedy, asymptoticSchedule, Bres, n);
         //drawSchedule(returnGreedy, asymptoticSchedule);
+        System.out.println();
         return returnGreedy;
     }
 
@@ -360,6 +378,29 @@ public class GreedyAlgorithm {
         }
         System.out.println();
 
+    }
+
+    public static boolean checkPredecessors(int[][] greedyAlgorithm, int[][] asymptoticSchedule) {
+        int lengthGreedyJobs = greedyAlgorithm[0].length;
+        for (int i = 0; i < lengthGreedyJobs; i++){
+            int jobStartMomentFirst = asymptoticSchedule[i][0];
+            int jobTimeStartFirst = greedyAlgorithm[0][i];
+            for (int j = 0; j < lengthGreedyJobs; j++){
+                int jobEndMomentSecond = asymptoticSchedule[j][1];
+                int jobTimeFinishSecond = greedyAlgorithm[0][j] + asymptoticSchedule[j][2];
+                if (jobStartMomentFirst == jobEndMomentSecond){
+                    if (jobTimeStartFirst < jobTimeFinishSecond){
+                        System.out.println(" ERROR WITH PREDECESSORS!");
+                        System.out.println(" PREDECESSORS: first job - " + i + " second job - " + j);
+                        System.out.println(" TIME START FIRST JOB: " + jobTimeStartFirst);
+                        System.out.println(" TIME FINISH SECOND JOB: " + jobTimeFinishSecond);
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        return true;
     }
 
     public static boolean checkIfCorrectSchedule(int[][] greedyAlgorithm, int[][] asymptoticSchedule, int[] Bres, int n){
